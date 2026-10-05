@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(./scenarios/labels/**)",
+      "Edit(./scenarios/snapshots/**)",
+      "Edit(./scenarios/GOLDEN.lock)",
+      "Bash(make lock-golden)",
+      "Bash(make lock-golden *)",
+      "Read(./.env)"
+    ]
+  }
+}
