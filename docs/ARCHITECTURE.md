@@ -67,3 +67,8 @@ flowchart TD
 | 초기 | 루프는 SDK 직접 구현 | 하네스 구조를 깊이 이해하기 위함 | 에이전트 프레임워크 |
 | 초기 | 모델 호출은 게이트웨이로 분리 | 공급자 교체와 사내 환경 대응 | SDK 직접 호출 |
 | 초기 | 인용 검증은 `submit_report` 툴 안에서 코드로 수행 | 어떤 런타임(자작 루프, Copilot)에서도 검증 유지 | 루프 쪽에서 검증 |
+| 2026-10-05 | Java 21 + Gradle 멀티모듈. 하네스는 순수 Java, Spring Boot는 service에만 | 주력 스택이라 하네스 설계에 시간을 쓸 수 있음. 평가·서비스·MCP 어댑터가 같은 하네스를 스프링 기동 없이 공유 | Python 3.12 + uv (SDK·예제 풍부, 반복 빠름), TypeScript, Go |
+| 2026-10-05 | 모듈 경계로 원칙 강제: SDK는 agent-gateway가 `implementation`으로만 의존 | 원칙 5 위반이 관례가 아니라 컴파일 에러가 됨 | 린트·코드 리뷰로 관리 |
+| 2026-10-05 | 실행 환경은 Windows 네이티브 + GNU make. Makefile은 셸 문법에 기대지 않게 작성 | WSL2를 추천했으나 WSL 계정 문제로 보류. CI(Linux)와 개발 PC 양쪽에서 같은 Makefile이 돌아야 함 | WSL2 (make·.sh·docker가 그대로 동작) |
+| 2026-10-05 | GOLDEN.lock은 sha256sum 호환 텍스트, 바이트 그대로 해시, 경로는 '/' 정규화. `scenarios/** -text` | diff로 읽히고 외부 도구로 재검증 가능. 줄바꿈 변환이 해시를 깨지 않게 함 | JSON lock, 디렉터리 단일 해시 |
+| 2026-10-05 | lock 생성은 별도 태스크(`lockGolden`)로 분리하고 deny 규칙 대상에 포함 | `make lock-golden`만 막으면 gradlew로 우회 가능 | make 타깃만 차단 |

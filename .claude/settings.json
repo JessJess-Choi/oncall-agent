@@ -6,7 +6,9 @@
       "Edit(./scenarios/GOLDEN.lock)",
       "Bash(make lock-golden)",
       "Bash(make lock-golden *)",
-      "Read(./.env)"
+      "Read(./.env)",
+      "Bash(*lockGolden*)",
+      "Bash(*LockGoldenMain*)",
     ]
   }
 }

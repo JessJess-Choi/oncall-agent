@@ -1,0 +1,10 @@
+* text=auto
+
+# 정답·스냅샷과 GOLDEN.lock은 바이트 그대로 둔다. 줄바꿈 변환이 일어나면 해시가 달라진다.
+scenarios/** -text
+
+gradlew text eol=lf
+*.sh text eol=lf
+Makefile text eol=lf
+*.bat text eol=crlf
+*.jar binary

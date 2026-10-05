@@ -47,7 +47,8 @@ docs/
 - 하네스를 바꾼 뒤에는 최소 부분집합 평가를 돌리고, 결과 표를 커밋 설명에 붙인다.
 
 ## 코드와 환경
-- 언어/프레임워크: 미정. 0주차 첫 세션에서 확정하고 이 줄을 갱신한다.
+- 언어/프레임워크: Java 21 (Gradle toolchain), Gradle Kotlin DSL 멀티모듈, 기본 패키지 `dev.oncall`, 테스트는 JUnit 5. 하네스(agent-*)와 eval은 순수 Java이고, Spring Boot는 service 모듈에서만 쓴다. Spring AI의 자동 툴 호출 루프는 쓰지 않는다.
+- 공급자 SDK는 agent-gateway 모듈만 `implementation`으로 의존한다. 다른 모듈은 SDK 타입을 볼 수 없다.
 - 프로젝트용 API 키는 `ONCALL_ANTHROPIC_API_KEY` 환경 변수로만 읽는다. `ANTHROPIC_API_KEY`는 쓰지 않는다. 이 변수가 있으면 Claude Code가 구독 대신 API 과금으로 전환된다.
 - 비밀값은 `.env`에만 두고 커밋하지 않는다.
 - 샘플 데이터만 사용한다. 실제 회사 코드, 로그, 내부 정보를 이 저장소에 넣지 않는다.
