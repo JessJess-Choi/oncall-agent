@@ -1,0 +1,41 @@
+# 알림 규칙. 알림 이름은 시나리오 정의의 alert.name과 맞춘다.
+groups:
+  - name: service
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum by (service) (rate(http_server_requests_seconds_count{status=~"5..", uri!~"/actuator.*"}[1m]))
+            /
+          sum by (service) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[1m]))
+            > 0.05
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.service }} 5xx 비율이 5%를 넘었다"
+          value: "{{ $value | humanizePercentage }}"
+
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (service, le) (rate(http_server_requests_seconds_bucket{uri!~"/actuator.*"}[1m])))
+            > 1
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.service }} p95 응답 시간이 1초를 넘었다"
+          value: "{{ $value | humanizeDuration }}"
+
+      - alert: HighHeapUsage
+        expr: |
+          sum by (service) (jvm_memory_used_bytes{area="heap"})
+            /
+          sum by (service) (jvm_memory_max_bytes{area="heap"} > 0)
+            > 0.85
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.service }} 힙 사용률이 85%를 넘었다"
+          value: "{{ $value | humanizePercentage }}"

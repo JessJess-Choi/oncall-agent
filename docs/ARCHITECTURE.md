@@ -72,3 +72,8 @@ flowchart TD
 | 2026-10-05 | 실행 환경은 Windows 네이티브 + GNU make. Makefile은 셸 문법에 기대지 않게 작성 | WSL2를 추천했으나 WSL 계정 문제로 보류. CI(Linux)와 개발 PC 양쪽에서 같은 Makefile이 돌아야 함 | WSL2 (make·.sh·docker가 그대로 동작) |
 | 2026-10-05 | GOLDEN.lock은 sha256sum 호환 텍스트, 바이트 그대로 해시, 경로는 '/' 정규화. `scenarios/** -text` | diff로 읽히고 외부 도구로 재검증 가능. 줄바꿈 변환이 해시를 깨지 않게 함 | JSON lock, 디렉터리 단일 해시 |
 | 2026-10-05 | lock 생성은 별도 태스크(`lockGolden`)로 분리하고 deny 규칙 대상에 포함 | `make lock-golden`만 막으면 gradlew로 우회 가능 | make 타깃만 차단 |
+| 2026-10-06 | 샘플 서비스는 Spring Boot 2개(order-api, payment-api), `infra/services` 별도 Gradle 빌드, 이미지 안에서 컴파일 | HikariCP·Micrometer가 실제와 같은 로그·메트릭을 남김. 대상 시스템이라 하네스 빌드와 분리 | Go/Python 경량 서비스 |
+| 2026-10-06 | 배포는 하나의 이미지에서 `APP_VERSION`을 바꿔 재기동하는 것으로 표현. 변경 설명은 `versions.yaml` | 버전별 이미지를 따로 만들지 않고도 배포 이력과 diff를 재현 가능 | 버전별 이미지 빌드 |
+| 2026-10-06 | 로그 수집은 Alloy, 대상은 order-api·payment-api·postgres만 | Postgres 느린 쿼리 로그까지 수집. 부하 생성기·toxiproxy 로그는 주입 흔적이라 제외 | 앱 Loki appender, Promtail(지원 종료) |
+| 2026-10-06 | 하위 서비스 지연은 toxiproxy로 주입 | 앱 코드에 장애 분기를 넣지 않아 로그에 주입 흔적이 남지 않음 | payment-api에 지연 플래그 |
+| 2026-10-06 | 평소 노이즈(재고 동기화 지연 경고, 404, 미지 쿠폰)와 무관한 배포를 섞는다 | 노이즈가 없으면 "에러 로그 하나 찾기"가 되어 평가 변별력이 없음 | 노이즈 없는 깨끗한 로그 |

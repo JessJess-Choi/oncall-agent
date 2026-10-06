@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: order-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/shop}
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 3000
+
+server:
+  port: 8080
+
+app:
+  version: ${APP_VERSION:1.0.0}
+  payment-base-url: ${PAYMENT_BASE_URL:http://toxiproxy:18081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+
+logging:
+  structured:
+    format:
+      console: logstash

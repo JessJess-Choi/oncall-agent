@@ -1,0 +1,38 @@
+// 이 compose 프로젝트의 컨테이너 로그를 Loki로 보낸다.
+// 조사 대상(order-api, payment-api, postgres)만 남긴다. 부하 생성기와 toxiproxy, 관측 스택의 로그는
+// 실제 운영에서 볼 수 없는 정보(장애 주입 흔적)를 담고 있어 수집하지 않는다.
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+
+  filter {
+    name   = "label"
+    values = ["com.docker.compose.project=oncall"]
+  }
+}
+
+discovery.relabel "targets" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    regex         = "order-api|payment-api|postgres"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.targets.output
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

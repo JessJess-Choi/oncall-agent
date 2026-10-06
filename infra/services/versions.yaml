@@ -1,0 +1,33 @@
+# 배포 버전별 변경 요약. 배포 이력(deploys.json)과 get_diff 툴의 데이터 원천이다.
+# 에이전트가 읽는 데이터이므로 원인을 직접 말하지 않고, 실제 커밋 메시지처럼 쓴다.
+order-api:
+  "1.0.0":
+    summary: 기준 버전
+    changes: []
+  "1.1.0":
+    summary: 주문 목록 응답 필드 정리
+    changes:
+      - OrderController 응답 DTO 필드 순서 정리
+      - 로그 메시지 문구 통일
+  "1.2.0":
+    summary: 쿠폰 코드 정규화 로직 공통화
+    changes:
+      - OrderService의 쿠폰 코드 trim/대문자 변환을 CouponCodes.normalize로 이동
+      - 호출부 중복 분기 제거
+  "1.3.0":
+    summary: 주문 생성 시 결제 승인과 상태 갱신의 정합성 개선
+    changes:
+      - 주문 저장, 결제 승인 요청, 주문 상태 갱신을 하나의 트랜잭션으로 묶음
+      - 결제 실패 시 주문 레코드가 PENDING으로 남는 문제 해결
+  "1.4.0":
+    summary: 영수증 조회 성능 개선
+    changes:
+      - 주문 생성 시 영수증 HTML을 미리 렌더링해 메모리에 보관 (ReceiptCache)
+payment-api:
+  "2.0.0":
+    summary: 기준 버전
+    changes: []
+  "2.0.1":
+    summary: 카드사 응답 로그 필드 추가
+    changes:
+      - 승인 지연 경고 로그에 orderId 포함

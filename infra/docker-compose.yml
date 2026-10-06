@@ -1,0 +1,127 @@
+# 조사 대상 시스템 + 관측 스택. make up / make down으로 다룬다.
+# 서비스 버전은 ORDER_API_VERSION, PAYMENT_API_VERSION 환경 변수로 바꾼다 ("배포").
+name: oncall
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: shop
+    command:
+      - postgres
+      - -c
+      - log_min_duration_statement=300
+      - -c
+      - log_line_prefix=%m [%p] %q%u@%d
+      - -c
+      - max_parallel_workers_per_gather=0
+      - -c
+      - shared_buffers=64MB
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # TCP로 확인한다. 초기화(시드) 중의 임시 서버는 유닉스 소켓만 열어 이 검사를 통과하지 않는다.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U app -d shop"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  payment-api:
+    build:
+      context: ./services
+      args:
+        SERVICE: payment-api
+    image: oncall/payment-api:local
+    environment:
+      APP_VERSION: ${PAYMENT_API_VERSION:-2.0.0}
+      JAVA_OPTS: -Xmx256m
+    restart: unless-stopped
+
+  toxiproxy:
+    # ghcr.io 이미지(2.12.0)는 이 PC의 Docker Desktop에서 pull이 거부되어 Docker Hub 이미지를 쓴다.
+    image: shopify/toxiproxy:2.1.4
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy:/config:ro
+    ports:
+      - "8474:8474"
+
+  order-api:
+    build:
+      context: ./services
+      args:
+        SERVICE: order-api
+    image: oncall/order-api:local
+    environment:
+      APP_VERSION: ${ORDER_API_VERSION:-1.0.0}
+      JAVA_OPTS: -Xmx256m -XX:+ExitOnOutOfMemoryError
+      PAYMENT_BASE_URL: http://toxiproxy:18081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      toxiproxy:
+        condition: service_started
+      payment-api:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  loadgen:
+    image: grafana/k6:2.3.0
+    command: ["run", "--quiet", "/scripts/load.js"]
+    volumes:
+      - ./k6:/scripts:ro
+    depends_on:
+      - order-api
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:3.7.8
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+
+  alloy:
+    image: grafana/alloy:v1.20.1
+    command: ["run", "--storage.path=/var/lib/alloy/data", "/etc/alloy/config.alloy"]
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
+  # 사람이 눈으로 볼 때만: docker compose -f infra/docker-compose.yml --profile ui up -d
+  grafana:
+    image: grafana/grafana:13.0.10
+    profiles: ["ui"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  prometheus-data:
+  loki-data:
