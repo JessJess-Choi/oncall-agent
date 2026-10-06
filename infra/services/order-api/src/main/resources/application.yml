@@ -31,3 +31,10 @@ logging:
   structured:
     format:
       console: logstash
+    # 운영에서 흔히 쓰는 스택트레이스 축약. 장애 구간 로그가 분당 수 MB로 불어나는 것을 막는다.
+    # 예외마다 앞쪽 12프레임만, 전체 3000자까지. 원인(Caused by) 체인은 남는다.
+    json:
+      stacktrace:
+        max-throwable-depth: 12
+        max-length: 3000
+        include-common-frames: false

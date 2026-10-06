@@ -16,7 +16,7 @@
 ## 0주차: 저장소 부트스트랩 (반나절~하루)
 - [x] 언어/프레임워크 확정, AGENTS.md의 해당 줄 갱신
 - [x] Makefile 골격 (`up`, `down`, `capture`, `test`, `eval`, `lock-golden`)
-  - [ ] `make run` 타깃 (v2 추가)
+  - [x] `make run` 타깃 (v2 추가, 2주차까지 스텁)
 - [x] GOLDEN.lock 생성·검증 스크립트 (labels + snapshots 해시, 불일치 시 평가 거부)
 - [ ] `.env.example`을 복사해 `.env` 작성 (1단계는 모델 키 불필요, 비워둔다)
 - 완료 기준: `make test`가 빈 테스트로라도 통과하고, GOLDEN.lock 검증 테스트가 있다

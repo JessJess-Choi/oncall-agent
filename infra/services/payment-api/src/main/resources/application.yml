@@ -22,3 +22,8 @@ logging:
   structured:
     format:
       console: logstash
+    json:
+      stacktrace:
+        max-throwable-depth: 12
+        max-length: 3000
+        include-common-frames: false

@@ -1,4 +1,4 @@
-.PHONY: up down down-clean capture test eval lock-golden
+.PHONY: up down down-clean capture test run eval lock-golden
 
 # Windows의 make는 셸이 cmd일 수 있으므로 셸 문법에 기대지 않는다.
 ifeq ($(OS),Windows_NT)
@@ -26,6 +26,10 @@ capture:
 
 test:
 	$(GRADLE) test
+
+# make run SCENARIO=<id> RUNNER=claude_code|own_loop
+run:
+	$(error $@: 2주차에 구현한다)
 
 # make eval / make eval SCENARIOS=a,b
 eval:

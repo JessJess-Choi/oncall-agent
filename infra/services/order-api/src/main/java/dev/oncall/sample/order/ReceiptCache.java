@@ -8,7 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 1.4.0: 영수증 재조회를 빠르게 하려고 렌더링한 HTML을 보관한다. 만료도 상한도 없다.
- * 주문 1건당 약 16KB라서, 초당 25건이면 힙 256MB가 몇 분 안에 찬다.
+ * 주문 1건당 약 16KB라서, 초당 25건이면 힙 256MB가 약 9분 안에 85%를 넘는다.
+ * 32KB로 키우면 85% 도달 뒤 OOM까지 1분이 안 남아, 알림(for: 1m)이 울리기 전에 재기동되어 버린다.
  */
 @Component
 class ReceiptCache {
