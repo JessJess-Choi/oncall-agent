@@ -1,0 +1,28 @@
+[ {
+  "id" : "deploy-5868",
+  "service" : "payment-api",
+  "version" : "2.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-01T09:50:22Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-4130",
+  "service" : "order-api",
+  "version" : "1.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-03T05:50:22Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-8525",
+  "service" : "payment-api",
+  "version" : "2.0.1",
+  "previous_version" : "2.0.0",
+  "deployed_at" : "2026-10-07T12:50:52.598Z",
+  "author" : "deploy-bot",
+  "summary" : "카드사 응답 로그 필드 추가",
+  "changes" : [ "승인 지연 경고 로그에 orderId 포함" ]
+} ]

@@ -1,0 +1,21 @@
+id: slow-query-01
+root_cause_category: slow_query
+key_evidence:
+  - kind: log_pattern            # Postgres 느린 쿼리 로그 (log_min_duration_statement=300ms)
+    service: postgres
+    must_include: "FROM orders WHERE customer_id"
+  - kind: metric                 # 고객별 조회(GET /orders)만 유독 느려짐
+    name: http_latency_p95_by_uri
+    service: order-api
+    labels: { method: GET, uri: /orders }
+    expect: increase
+distractors:
+  - kind: deploy                 # 기준선 구간의 payment-api 2.0.1 배포. 원인으로 지목하면 오답
+    deploy_id: deploy-8525
+  - kind: category               # 연쇄 증상(풀 고갈, 503)을 원인으로 답하면 오답
+    root_cause_category: connection_pool_exhaustion
+action_keywords: ["index", "인덱스"]
+notes: >
+  idx_orders_customer_created가 사라져 고객별 주문 조회가 400만 행을 순차 탐색한다.
+  느린 쿼리가 커넥션을 오래 쥐어 풀 고갈(503)이 함께 나타나지만 이는 증상이다.
+  order-api 배포가 없다는 점과 Postgres 느린 쿼리 로그가 원인을 가리킨다.

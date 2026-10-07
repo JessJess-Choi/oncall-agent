@@ -1,0 +1,14 @@
+id: memory-leak-01
+root_cause_category: memory_leak
+key_evidence:
+  - kind: metric                 # 힙 사용량이 계단식으로 계속 증가 (GC 후에도 내려오지 않음)
+    name: jvm_heap_used_bytes
+    service: order-api
+    expect: increase
+  - kind: deploy                 # order-api 1.4.0 "영수증 HTML을 미리 렌더링해 메모리에 보관"
+    deploy_id: deploy-8016
+action_keywords: ["rollback", "롤백", "cache", "캐시"]
+notes: >
+  1.4.0이 주문마다 렌더링한 영수증 HTML(약 16KB)을 만료 없이 보관한다.
+  에러와 지연은 정상이고 로그에도 뚜렷한 흔적이 없어, 메트릭과 배포 이력으로 추론해야 한다.
+  배포 직후가 아니라 몇 분 뒤에 알림이 울리는 시간차가 특징이다.

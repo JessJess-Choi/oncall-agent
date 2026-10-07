@@ -1,0 +1,32 @@
+{
+  "version" : "4",
+  "status" : "firing",
+  "receiver" : "oncall",
+  "groupLabels" : {
+    "alertname" : "HighErrorRate"
+  },
+  "commonLabels" : {
+    "alertname" : "HighErrorRate",
+    "service" : "order-api",
+    "severity" : "page"
+  },
+  "commonAnnotations" : {
+    "summary" : "order-api 5xx 비율이 5%를 넘었다",
+    "value" : "21.69%"
+  },
+  "alerts" : [ {
+    "status" : "firing",
+    "labels" : {
+      "alertname" : "HighErrorRate",
+      "service" : "order-api",
+      "severity" : "page"
+    },
+    "annotations" : {
+      "summary" : "order-api 5xx 비율이 5%를 넘었다",
+      "value" : "21.69%"
+    },
+    "startsAt" : "2026-10-07T12:11:50.049Z",
+    "endsAt" : "0001-01-01T00:00:00Z",
+    "fingerprint" : "ea6fba92bdf71e03"
+  } ]
+}

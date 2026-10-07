@@ -1,0 +1,17 @@
+id: pool-exhaustion-01
+root_cause_category: connection_pool_exhaustion
+key_evidence:
+  - kind: log_pattern
+    service: order-api
+    must_include: "Connection is not available"
+  - kind: deploy                 # order-api 1.3.0 "결제 승인과 상태 갱신을 하나의 트랜잭션으로"
+    deploy_id: deploy-5440
+  - kind: metric                 # 대기 커넥션 급증, active가 풀 크기(10)에 고정
+    name: db_pool_pending
+    service: order-api
+    expect: increase
+action_keywords: ["rollback", "롤백", "transaction", "트랜잭션"]
+notes: >
+  1.3.0이 결제 승인 호출을 DB 트랜잭션 안으로 옮겨, 결제 대기(약 0.5초) 동안 커넥션을 쥔다.
+  필요한 동시 커넥션(초당 25건 × 0.5초 = 12.5개)이 풀 크기 10을 넘는다.
+  풀 크기를 늘리는 것은 임시방편이고, 롤백하거나 결제 호출을 트랜잭션 밖으로 빼는 것이 조치다.

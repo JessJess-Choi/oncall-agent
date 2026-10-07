@@ -1,0 +1,17 @@
+{
+  "scenario_id" : "bad-deploy-01",
+  "note" : "평가 전용 파일. 에이전트 툴에 노출하지 않는다",
+  "window" : {
+    "start" : "2026-10-07T12:07:22.320Z",
+    "injected_at" : "2026-10-07T12:10:22.327Z",
+    "alert_fired_at" : "2026-10-07T12:11:50.049Z",
+    "end" : "2026-10-07T12:12:50.049Z"
+  },
+  "service_versions" : {
+    "order-api" : "1.2.0",
+    "payment-api" : "2.0.0"
+  },
+  "data_seed" : 0.42,
+  "definition_sha256" : "1d9318b1e0ae049e94cd4c8ccffb11986c03478071896a3de5a418d0487481fa",
+  "git" : "069e45ef88db18a7d11322535cdce2a674108723"
+}

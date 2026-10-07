@@ -1,0 +1,24 @@
+id: downstream-timeout-01
+root_cause_category: downstream_timeout
+key_evidence:
+  - kind: log_pattern            # order-api가 결제 호출에서 타임아웃
+    service: order-api
+    must_include: "Payment request failed"
+  - kind: metric                 # order-api가 보는 결제 호출 지연은 급증
+    name: http_client_latency_p95
+    service: order-api
+    expect: increase
+  - kind: metric                 # 그런데 payment-api 자신의 처리 시간은 정상 (둘 사이 구간이 문제)
+    name: http_latency_p95
+    service: payment-api
+    expect: unchanged
+distractors:
+  - kind: deploy                 # 기준선 구간의 payment-api 2.0.1 배포. 장애 2분 전에 끝났고 이후 payment-api는 정상
+    deploy_id: deploy-6254
+  - kind: category               # payment-api 배포를 원인으로 보는 오답
+    root_cause_category: bad_deploy
+action_keywords: ["network", "네트워크", "gateway", "게이트웨이", "timeout", "타임아웃"]
+notes: >
+  order-api와 payment-api 사이 구간(payment-gateway)에 응답 지연 5초가 생겨,
+  order-api의 읽기 타임아웃(3초)을 넘기고 504를 낸다. payment-api 자체 로그와 지연은 정상이다.
+  직전의 payment-api 배포는 미끼다.

@@ -1,0 +1,32 @@
+{
+  "version" : "4",
+  "status" : "firing",
+  "receiver" : "oncall",
+  "groupLabels" : {
+    "alertname" : "HighLatency"
+  },
+  "commonLabels" : {
+    "alertname" : "HighLatency",
+    "service" : "order-api",
+    "severity" : "page"
+  },
+  "commonAnnotations" : {
+    "summary" : "order-api p95 응답 시간이 1초를 넘었다",
+    "value" : "5.411s"
+  },
+  "alerts" : [ {
+    "status" : "firing",
+    "labels" : {
+      "alertname" : "HighLatency",
+      "service" : "order-api",
+      "severity" : "page"
+    },
+    "annotations" : {
+      "summary" : "order-api p95 응답 시간이 1초를 넘었다",
+      "value" : "5.411s"
+    },
+    "startsAt" : "2026-10-07T12:55:33.624Z",
+    "endsAt" : "0001-01-01T00:00:00Z",
+    "fingerprint" : "85c5d4391326506e"
+  } ]
+}

@@ -1,0 +1,17 @@
+{
+  "scenario_id" : "slow-query-01",
+  "note" : "평가 전용 파일. 에이전트 툴에 노출하지 않는다",
+  "window" : {
+    "start" : "2026-10-07T12:50:22.582Z",
+    "injected_at" : "2026-10-07T12:53:22.590Z",
+    "alert_fired_at" : "2026-10-07T12:55:33.624Z",
+    "end" : "2026-10-07T12:56:33.624Z"
+  },
+  "service_versions" : {
+    "order-api" : "1.0.0",
+    "payment-api" : "2.0.1"
+  },
+  "data_seed" : 0.42,
+  "definition_sha256" : "f77288c832622e7306df516b8d5b309debc9da60ae4edc081f8934e034976ac0",
+  "git" : "069e45ef88db18a7d11322535cdce2a674108723-dirty"
+}

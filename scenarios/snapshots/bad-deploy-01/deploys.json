@@ -1,0 +1,28 @@
+[ {
+  "id" : "deploy-9228",
+  "service" : "payment-api",
+  "version" : "2.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-01T09:07:22Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-9651",
+  "service" : "order-api",
+  "version" : "1.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-03T05:07:22Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-8702",
+  "service" : "order-api",
+  "version" : "1.2.0",
+  "previous_version" : "1.0.0",
+  "deployed_at" : "2026-10-07T12:10:22.345Z",
+  "author" : "deploy-bot",
+  "summary" : "쿠폰 코드 정규화 로직 공통화",
+  "changes" : [ "OrderService의 쿠폰 코드 trim/대문자 변환을 CouponCodes.normalize로 이동", "호출부 중복 분기 제거" ]
+} ]

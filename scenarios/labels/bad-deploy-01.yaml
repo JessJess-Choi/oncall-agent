@@ -1,0 +1,13 @@
+id: bad-deploy-01
+root_cause_category: bad_deploy
+key_evidence:
+  - kind: log_pattern            # 1.2.0 배포 직후부터 쿠폰 없는 주문에서 NPE
+    service: order-api
+    must_include: "CouponCodes.normalize"
+  - kind: deploy                 # order-api 1.2.0 "쿠폰 코드 정규화 로직 공통화"
+    deploy_id: deploy-8702
+action_keywords: ["rollback", "롤백"]
+notes: >
+  1.2.0이 쿠폰 코드 null 검사를 호출부에서 없애고 CouponCodes.normalize에 맡겼는데,
+  그 메서드에 null 처리가 없다. 쿠폰 없는 주문(약 40%)이 NullPointerException으로 500을 낸다.
+  커넥션 풀과 지연은 정상이다. 조치는 1.0.0으로 롤백.

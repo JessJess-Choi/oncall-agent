@@ -1,0 +1,17 @@
+{
+  "scenario_id" : "memory-leak-01",
+  "note" : "평가 전용 파일. 에이전트 툴에 노출하지 않는다",
+  "window" : {
+    "start" : "2026-10-07T12:35:48.194Z",
+    "injected_at" : "2026-10-07T12:38:48.201Z",
+    "alert_fired_at" : "2026-10-07T12:47:07.210Z",
+    "end" : "2026-10-07T12:48:07.210Z"
+  },
+  "service_versions" : {
+    "order-api" : "1.4.0",
+    "payment-api" : "2.0.0"
+  },
+  "data_seed" : 0.42,
+  "definition_sha256" : "7edeca9a60124cc04e42fcc891bcbce6234c36228bdfd67f34a7ec5046155e32",
+  "git" : "069e45ef88db18a7d11322535cdce2a674108723-dirty"
+}

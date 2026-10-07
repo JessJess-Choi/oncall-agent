@@ -1,0 +1,28 @@
+[ {
+  "id" : "deploy-7987",
+  "service" : "payment-api",
+  "version" : "2.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-01T09:35:48Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-1825",
+  "service" : "order-api",
+  "version" : "1.0.0",
+  "previous_version" : null,
+  "deployed_at" : "2026-10-03T05:35:48Z",
+  "author" : "deploy-bot",
+  "summary" : "기준 버전",
+  "changes" : [ ]
+}, {
+  "id" : "deploy-8016",
+  "service" : "order-api",
+  "version" : "1.4.0",
+  "previous_version" : "1.0.0",
+  "deployed_at" : "2026-10-07T12:38:48.219Z",
+  "author" : "deploy-bot",
+  "summary" : "영수증 조회 성능 개선",
+  "changes" : [ "주문 생성 시 영수증 HTML을 미리 렌더링해 메모리에 보관 (ReceiptCache)" ]
+} ]

@@ -1,0 +1,17 @@
+{
+  "scenario_id" : "downstream-timeout-01",
+  "note" : "평가 전용 파일. 에이전트 툴에 노출하지 않는다",
+  "window" : {
+    "start" : "2026-10-07T12:29:07.289Z",
+    "injected_at" : "2026-10-07T12:32:07.296Z",
+    "alert_fired_at" : "2026-10-07T12:33:27.595Z",
+    "end" : "2026-10-07T12:34:27.595Z"
+  },
+  "service_versions" : {
+    "order-api" : "1.0.0",
+    "payment-api" : "2.0.1"
+  },
+  "data_seed" : 0.42,
+  "definition_sha256" : "717f8ed6ba3460cbf5f2e8d9b1acfc81ded626e6584581d7052282d7a8504bff",
+  "git" : "069e45ef88db18a7d11322535cdce2a674108723-dirty"
+}
