@@ -3,6 +3,7 @@ package dev.oncall.eval.capture;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -13,6 +14,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /** Prometheus·Loki HTTP API 구현과 공용 요청 도구. */
@@ -25,13 +28,35 @@ final class HttpClients {
     private HttpClients() {
     }
 
+    /** 조회 실패(연결·시간 초과)만 재시도한다. HTTP 오류 응답은 재시도해도 같으므로 바로 실패한다. */
+    static final int GET_ATTEMPTS = 3;
+    static final Duration GET_BACKOFF = Duration.ofSeconds(5);
+
+    /**
+     * 조회(GET)는 읽기 전용이라 안전하게 재시도할 수 있다.
+     * 부하가 큰 장애 구간(예: slow_query)에서는 Loki 조회가 느려져 한 번에 응답하지 않을 수 있다.
+     */
     static String get(String base, String path, Map<String, String> params) {
-        return send(HttpRequest.newBuilder(uri(base, path, params)).GET());
+        return withRetry(GET_ATTEMPTS, () -> send(HttpRequest.newBuilder(uri(base, path, params)).GET()),
+                HttpClients::pause);
+    }
+
+    static <T> T withRetry(int attempts, Supplier<T> call, Consumer<Duration> sleeper) {
+        for (int i = 1; ; i++) {
+            try {
+                return call.get();
+            } catch (UncheckedIOException e) {
+                if (i >= attempts) {
+                    throw new IllegalStateException("요청 실패 (" + attempts + "회 시도): " + e.getCause().getMessage(), e);
+                }
+                sleeper.accept(GET_BACKOFF.multipliedBy(i));
+            }
+        }
     }
 
     static String send(HttpRequest.Builder request) {
         try {
-            HttpResponse<String> res = HTTP.send(request.timeout(Duration.ofSeconds(60)).build(),
+            HttpResponse<String> res = HTTP.send(request.timeout(Duration.ofMinutes(3)).build(),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (res.statusCode() / 100 != 2) {
                 throw new IllegalStateException(res.request().method() + " " + res.uri() + " → " + res.statusCode()
@@ -39,7 +64,16 @@ final class HttpClients {
             }
             return res.body();
         } catch (IOException e) {
-            throw new IllegalStateException("요청 실패: " + e.getMessage(), e);
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("요청 중단", e);
+        }
+    }
+
+    private static void pause(Duration d) {
+        try {
+            Thread.sleep(d.toMillis());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("요청 중단", e);
