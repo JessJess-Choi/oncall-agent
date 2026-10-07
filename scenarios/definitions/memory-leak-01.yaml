@@ -1,0 +1,11 @@
+# 1.4.0이 영수증 HTML(주문당 16KB)을 만료 없이 보관해 힙이 계속 증가한다.
+id: memory-leak-01
+service: order-api
+fault:
+  type: memory_leak
+  steps:
+    - deploy: { service: order-api, version: "1.4.0" }
+alert:
+  name: HighHeapUsage
+  labels: { service: order-api, severity: page }
+  timeout: 15m

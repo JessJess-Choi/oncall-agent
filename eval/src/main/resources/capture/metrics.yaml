@@ -1,0 +1,40 @@
+# 스냅샷에 담는 허용 메트릭. 이름은 에이전트 툴(get_metrics)이 쓰는 이름이 된다.
+# 장애 주입 장치(toxiproxy, k6)를 드러내는 라벨은 by 절에 넣지 않는다.
+metrics:
+  - name: http_request_rate
+    query: sum by (service, method, uri, status) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[1m]))
+  # 5xx가 한 번도 없으면 분자 시계열이 없어 비율이 "값 없음"이 된다. 0으로 채워 장애 전후 비교가 가능하게 한다.
+  - name: http_error_ratio
+    query: |
+      (
+        sum by (service) (rate(http_server_requests_seconds_count{status=~"5..", uri!~"/actuator.*"}[1m]))
+          or sum by (service) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[1m])) * 0
+      ) / sum by (service) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[1m]))
+  - name: http_latency_p95
+    query: histogram_quantile(0.95, sum by (service, le) (rate(http_server_requests_seconds_bucket{uri!~"/actuator.*"}[1m])))
+  - name: http_latency_p95_by_uri
+    query: histogram_quantile(0.95, sum by (service, method, uri, le) (rate(http_server_requests_seconds_bucket{uri!~"/actuator.*"}[1m])))
+  - name: http_client_latency_p95
+    query: histogram_quantile(0.95, sum by (service, method, uri, le) (rate(http_client_requests_seconds_bucket[1m])))
+  - name: http_client_request_rate
+    query: sum by (service, method, uri, status) (rate(http_client_requests_seconds_count[1m]))
+  - name: db_pool_active
+    query: max by (service) (hikaricp_connections_active)
+  - name: db_pool_pending
+    query: max by (service) (hikaricp_connections_pending)
+  - name: db_pool_max
+    query: max by (service) (hikaricp_connections_max)
+  - name: db_pool_timeout_rate
+    query: sum by (service) (rate(hikaricp_connections_timeout_total[1m]))
+  - name: jvm_heap_used_bytes
+    query: sum by (service) (jvm_memory_used_bytes{area="heap"})
+  - name: jvm_heap_max_bytes
+    query: sum by (service) (jvm_memory_max_bytes{area="heap"} > 0)
+  - name: jvm_gc_pause_seconds_rate
+    query: sum by (service) (rate(jvm_gc_pause_seconds_sum[1m]))
+  - name: process_cpu_usage
+    query: max by (service) (process_cpu_usage)
+  - name: process_start_time_seconds
+    query: max by (service) (process_start_time_seconds)
+  - name: up
+    query: max by (service) (up)

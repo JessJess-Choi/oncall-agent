@@ -21,8 +21,10 @@ down:
 down-clean:
 	$(COMPOSE) down -v
 
+# make capture SCENARIO=<id>: 스택이 떠 있어야 한다 (make up). 기존 스냅샷은 덮어쓰지 않는다.
 capture:
-	$(error $@: 1주차 3단계에서 구현한다)
+	$(if $(SCENARIO),,$(error 사용법: make capture SCENARIO=<id>))
+	$(GRADLE) -q :eval:capture --args="$(SCENARIO)"
 
 test:
 	$(GRADLE) test

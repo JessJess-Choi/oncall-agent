@@ -15,6 +15,11 @@ java {
 }
 
 dependencies {
+    // 시나리오 정의·versions.yaml(YAML)과 Loki/Prometheus 응답(JSON) 처리
+    implementation(platform("tools.jackson:jackson-bom:3.2.3"))
+    implementation("tools.jackson.core:jackson-databind")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
+
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -33,6 +38,15 @@ tasks.test {
 }
 
 tasks.named<JavaExec>("run") {
+    workingDir = rootDir
+}
+
+// 장애를 주입하고 스냅샷을 뜬다 (make capture SCENARIO=<id>). 실행 중인 스택이 필요하다.
+tasks.register<JavaExec>("capture") {
+    group = "scenarios"
+    description = "시나리오 정의대로 장애를 주입하고 scenarios/snapshots/<id>/를 만든다."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "dev.oncall.eval.capture.CaptureMain"
     workingDir = rootDir
 }
 

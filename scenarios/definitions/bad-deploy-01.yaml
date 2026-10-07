@@ -1,0 +1,11 @@
+# 1.2.0이 쿠폰 코드 null 검사를 없애, 쿠폰 없는 주문(약 40%)이 NPE로 500을 낸다.
+id: bad-deploy-01
+service: order-api
+fault:
+  type: bad_deploy
+  steps:
+    - deploy: { service: order-api, version: "1.2.0" }
+alert:
+  name: HighErrorRate
+  labels: { service: order-api, severity: page }
+  timeout: 8m

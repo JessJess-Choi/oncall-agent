@@ -5,7 +5,7 @@
 | 구성 | 위치 | 수정 |
 |---|---|---|
 | 정의 | scenarios/definitions/<id>.yaml | AI와 사람 모두 가능 |
-| 정답 라벨 | scenarios/labels/<id>.yaml | 사람만. AI는 docs/ 아래 임시 파일에 초안을 제안하고, 사람이 검토해 옮긴다 |
+| 정답 라벨 | scenarios/labels/<id>.yaml | 사람만. AI는 docs/drafts/ 아래에 초안을 제안하고, 사람이 검토해 옮긴다 |
 | 스냅샷 | scenarios/snapshots/<id>/ | `make capture`가 생성. 직접 수정 금지 |
 
 scenarios/GOLDEN.lock에는 labels와 snapshots의 해시가 들어 있고, 평가 러너가 시작할 때 검증한다.
@@ -17,15 +17,34 @@ scenarios/GOLDEN.lock에는 labels와 snapshots의 해시가 들어 있고, 평�
 
 ## 정의 예시
 ```yaml
-id: pool-exhaustion-01
+id: downstream-timeout-01
 service: order-api
 fault:
-  type: connection_pool_exhaustion
-  inject: ["infra/faults/pool_exhaustion.sh", "--duration", "300"]
-alert:
+  type: downstream_timeout
+  steps:                          # 장애 주입 단계 (순서대로 실행)
+    - toxic: { proxy: payment, type: latency, stream: downstream, attributes: { latency: 5000 } }
+background:                       # 장애와 무관한 배경 사건 (선택). 기준선 구간 시작 기준
+  - after: 30s
+    deploy: { service: payment-api, version: "2.0.1" }
+alert:                            # 이 알림이 firing 되면 캡처를 마무리한다
   name: HighErrorRate
   labels: { service: order-api, severity: page }
+  timeout: 10m
 ```
+버전은 `"1.0.0"`처럼 따옴표로 쓴다. 모르는 키나 단계는 로드할 때 거부한다.
+
+### 단계 종류 (닫힌 집합)
+| 단계 | 하는 일 | 배포 이력에 기록 |
+|---|---|---|
+| `deploy {service, version}` | 해당 버전으로 재기동 (`docker compose up -d`). 버전은 infra/services/versions.yaml에 있어야 한다 | 예 |
+| `sql "<문장>"` | postgres에서 실행 | 아니오 |
+| `toxic {proxy, type, stream, attributes}` | toxiproxy에 독성 추가 (지연 등) | 아니오 |
+| `wait <기간>` | 대기 (`30s`, `2m`) | 아니오 |
+
+### 캡처 흐름 (`make capture SCENARIO=<id>`)
+기준선 복원 → 안정화 → 기준선 구간 3분(배경 사건 실행) → 장애 주입 → 알림 대기 → 알림 후 1분 → 추출 → 누출 검사 → 스냅샷 작성.
+성공·실패와 무관하게 마지막에 기준선을 복원한다. 기준선 복원(기준 버전, 인덱스, toxic 제거)은 배포 이력에 남기지 않는다.
+모든 시각은 Prometheus 서버 시각을 기준으로 한다. 기존 스냅샷은 덮어쓰지 않으며, 다시 뜨려면 사람이 지운다.
 
 ## 라벨 예시
 ```yaml
@@ -49,6 +68,20 @@ scenarios/snapshots/<id>/
   deploys.json    배포 이력
   meta.json       캡처 시각, 서비스 버전, 시드
 ```
+모든 파일은 UTF-8, LF이고 키 순서가 고정이다 (GOLDEN.lock이 바이트 해시를 고정하므로).
+캡처 구간은 기준선 구간 시작부터 알림 발생 1분 뒤까지다.
+
+| 파일 | 형식 |
+|---|---|
+| alert.json | Alertmanager 웹훅 v4 (`status`, `commonLabels`, `alerts[{labels, annotations, startsAt, fingerprint}]`). 내부 링크(generatorURL) 없음 |
+| logs.jsonl | 한 줄에 `{"ts": RFC3339 나노초, "service", "line": 원문}`. 시간순. 대상은 order-api, payment-api, postgres |
+| metrics.json | `{step_seconds, start, end, series:[{name, labels, points:[[epoch초, 값 또는 null]]}]}`. 허용 메트릭(eval/src/main/resources/capture/metrics.yaml)만 |
+| deploys.json | `[{id, service, version, previous_version, deployed_at, author, summary, changes}]`. 기준 버전의 과거 배포(고정)와 이번 캡처의 deploy 단계. 설명은 versions.yaml에서 |
+| meta.json | 구간 시각(시작, 주입, 알림, 끝), 서비스 버전, 데이터 시드, 정의 파일 sha256, git 커밋 |
+
+- **meta.json은 평가 전용이다.** 주입 시각이 들어 있으므로 에이전트 툴과 어댑터가 노출하면 안 된다. 시나리오 정의와 라벨도 마찬가지다.
+- 배포 ID는 `deploy-` + sha256(`<시나리오 id>/<단계 위치>`)에서 만든 네 자리 숫자다. 다시 캡처해도 같아서 라벨의 `deploy_id`가 유지된다.
+- 누출 검사: alert·logs·metrics·deploys에 `fault, chaos, inject, toxi…, k6, loadgen, scenario`가 단어로 나오면 스냅샷을 만들지 않는다. 현실의 당직자가 볼 수 없는 주입 흔적이기 때문이다.
 
 ## 인젝션 시나리오
 기존 시나리오의 로그에 악성 지시문을 삽입한 변형으로 만든다.

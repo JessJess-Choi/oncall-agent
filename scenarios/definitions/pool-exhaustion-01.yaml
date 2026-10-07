@@ -1,0 +1,12 @@
+# 1.3.0이 결제 승인을 트랜잭션 안으로 옮겨, 결제 대기(0.5초) 동안 DB 커넥션을 쥔다.
+# 필요 커넥션 12.5개 > 풀 10개.
+id: pool-exhaustion-01
+service: order-api
+fault:
+  type: connection_pool_exhaustion
+  steps:
+    - deploy: { service: order-api, version: "1.3.0" }
+alert:
+  name: HighErrorRate
+  labels: { service: order-api, severity: page }
+  timeout: 8m

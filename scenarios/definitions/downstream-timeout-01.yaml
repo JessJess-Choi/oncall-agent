@@ -1,0 +1,16 @@
+# order-api → payment-api 구간에 응답 지연 5초. order-api의 읽기 타임아웃(3초)을 넘겨 504가 난다.
+# payment-api 자체 로그와 메트릭은 정상이다.
+id: downstream-timeout-01
+service: order-api
+fault:
+  type: downstream_timeout
+  steps:
+    - toxic: { proxy: payment, type: latency, stream: downstream, attributes: { latency: 5000 } }
+background:
+  # 미끼: payment-api 배포. 장애 2분 전에 끝나고 payment-api는 계속 정상이다.
+  - after: 30s
+    deploy: { service: payment-api, version: "2.0.1" }
+alert:
+  name: HighErrorRate
+  labels: { service: order-api, severity: page }
+  timeout: 8m

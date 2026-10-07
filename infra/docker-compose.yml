@@ -48,6 +48,11 @@ services:
       - ./toxiproxy:/config:ro
     ports:
       - "8474:8474"
+    # order-api는 이 별칭으로 부른다. 호스트 이름 "toxiproxy"가 로그(예외 메시지)와
+    # 메트릭 라벨(client_name)에 찍히면 장애 주입 흔적, 즉 정답 누출이 된다.
+    networks:
+      default:
+        aliases: [payment-gateway]
 
   order-api:
     build:
@@ -58,7 +63,7 @@ services:
     environment:
       APP_VERSION: ${ORDER_API_VERSION:-1.0.0}
       JAVA_OPTS: -Xmx256m -XX:+ExitOnOutOfMemoryError
-      PAYMENT_BASE_URL: http://toxiproxy:18081
+      PAYMENT_BASE_URL: http://payment-gateway:18081
     depends_on:
       postgres:
         condition: service_healthy

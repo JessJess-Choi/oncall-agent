@@ -1,0 +1,16 @@
+# 고객별 주문 조회 인덱스가 사라져 400만 행 전체 탐색이 일어난다.
+# 커넥션 풀 고갈(503)이 연쇄 증상으로 함께 나타난다. 원인 근거는 Postgres 느린 쿼리 로그와 order-api 배포 부재.
+id: slow-query-01
+service: order-api
+fault:
+  type: slow_query
+  steps:
+    - sql: DROP INDEX IF EXISTS idx_orders_customer_created
+background:
+  # 미끼: 무관한 하위 서비스 배포. 재기동 중 잠깐 오류가 나지만 주입 2분 전에 회복된다.
+  - after: 30s
+    deploy: { service: payment-api, version: "2.0.1" }
+alert:
+  name: HighLatency
+  labels: { service: order-api, severity: page }
+  timeout: 8m
