@@ -50,14 +50,33 @@ alert:                            # 이 알림이 firing 되면 캡처를 마무
 ```yaml
 id: pool-exhaustion-01
 root_cause_category: connection_pool_exhaustion
-key_evidence:
+key_evidence:                     # 원인을 가리키는 근거. 증상이 아니라 원인 쪽을 적는다
   - kind: log_pattern
+    service: order-api            # 이 서비스의 로그에 있어야 한다
     must_include: "Connection is not available"
   - kind: deploy
-    deploy_id: deploy-8123
-action_keywords: ["rollback", "transaction"]
+    deploy_id: deploy-5440
+  - kind: metric
+    name: db_pool_pending         # metrics.json의 이름 (허용 메트릭)
+    service: order-api
+    labels: { }                   # 선택. 특정 계열만 가리킬 때 (예: { method: GET, uri: /orders })
+    expect: increase              # increase | decrease | unchanged (기준선 구간 대비)
+distractors:                      # 선택. 원인으로 지목하면 오답인 것 (미끼 배포, 증상 카테고리)
+  - kind: deploy
+    deploy_id: deploy-8525
+  - kind: category
+    root_cause_category: connection_pool_exhaustion
+action_keywords: ["rollback", "롤백", "transaction", "트랜잭션"]
 notes: 결제 API 호출이 트랜잭션 안으로 이동한 배포가 원인
 ```
+
+| 근거 종류 | 필드 | 뜻 |
+|---|---|---|
+| `log_pattern` | `service`, `must_include` | 해당 서비스 로그 중 이 문자열을 포함한 줄을 인용했는가 |
+| `deploy` | `deploy_id` | 이 배포를 지목했는가 |
+| `metric` | `name`, `service`, `labels`(선택), `expect` | 이 메트릭이 기준선 대비 이렇게 변했다는 것을 근거로 들었는가 |
+
+`distractors`는 "속지 않는 능력"을 재기 위한 것이다. 연쇄 증상이 있는 시나리오(예: 느린 쿼리가 풀 고갈을 일으킴)의 라벨은 원인 기준으로 쓰고, 증상 카테고리는 `distractors`에 둔다.
 
 ## 스냅샷 구조
 ```
