@@ -6,6 +6,7 @@ __pycache__/
 node_modules/
 traces/
 docs/drafts/
+docs/study/
 infra/state/
 .gradle/
 build/
