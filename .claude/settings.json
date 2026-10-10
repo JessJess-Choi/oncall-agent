@@ -8,7 +8,7 @@
       "Bash(make lock-golden *)",
       "Read(./.env)",
       "Bash(*lockGolden*)",
-      "Bash(*LockGoldenMain*)",
+      "Bash(*LockGoldenMain*)"
     ]
   }
 }
