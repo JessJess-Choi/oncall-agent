@@ -1,4 +1,4 @@
-.PHONY: up down down-clean capture test run eval lock-golden
+.PHONY: up down down-clean capture test tools run eval lock-golden
 
 # Windows의 make는 셸이 cmd일 수 있으므로 셸 문법에 기대지 않는다.
 ifeq ($(OS),Windows_NT)
@@ -28,6 +28,10 @@ capture:
 
 test:
 	$(GRADLE) test
+
+# MCP 툴 서버 실행 파일을 만든다: tools/build/install/tools/bin/tools(.bat). Java 21로 실행해야 한다.
+tools:
+	$(GRADLE) -q :tools:installDist
 
 # make run SCENARIO=<id> RUNNER=claude_code|own_loop
 run:

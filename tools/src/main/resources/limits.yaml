@@ -1,0 +1,17 @@
+# 툴 출력 상한. 원칙 2: 출력 상한은 이 파일 한 곳에서 관리한다.
+# 4주차에 로그 툴을 패턴 집계로 바꿀 때도 여기서 조정하고, 바꿀 때마다 평가를 돌려 비교한다.
+
+# search_logs: 조건에 맞는 로그 중 가장 최근 몇 줄을 돌려줄지, 한 줄을 몇 글자까지 보여 줄지
+log_max_lines: 20
+log_line_max_chars: 500
+
+# get_metrics: 계열 하나당 점 개수(넘으면 일정 간격으로 솎음), 한 번에 돌려줄 계열 수
+metric_max_points: 40
+metric_max_series: 12
+
+# get_recent_deploys: 시작 시각을 주지 않았을 때 며칠 전까지 볼지, 최대 몇 건
+deploy_lookback_days: 7
+deploy_max: 20
+
+# 모든 툴 공통: 결과 JSON의 최대 글자 수. 넘으면 오래된 항목부터 덜어 낸다.
+result_max_chars: 16000

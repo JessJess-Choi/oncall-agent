@@ -15,6 +15,9 @@ java {
 }
 
 dependencies {
+    // 원인 카테고리의 단일 원천(RootCause)
+    implementation(project(":adapters"))
+
     // 시나리오 정의·versions.yaml(YAML)과 Loki/Prometheus 응답(JSON) 처리
     implementation(platform("tools.jackson:jackson-bom:3.2.3"))
     implementation("tools.jackson.core:jackson-databind")

@@ -1,5 +1,6 @@
 package dev.oncall.eval.capture;
 
+import dev.oncall.adapters.RootCause;
 import dev.oncall.eval.capture.ScenarioDefinition.AlertSpec;
 import dev.oncall.eval.capture.ScenarioDefinition.Background;
 import tools.jackson.databind.JsonNode;
@@ -11,12 +12,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * 시나리오 정의를 읽고 검증한다. 모르는 키와 단계는 거부한다.
@@ -25,8 +28,9 @@ import java.util.TreeSet;
 final class DefinitionLoader {
 
     static final String DIR = "scenarios/definitions";
-    static final Set<String> CATEGORIES =
-            Set.of("slow_query", "connection_pool_exhaustion", "bad_deploy", "downstream_timeout", "memory_leak");
+    /** 원인 카테고리는 adapters의 RootCause가 단일 원천이다. */
+    static final Set<String> CATEGORIES = Arrays.stream(RootCause.values()).map(RootCause::wireName)
+            .collect(Collectors.toUnmodifiableSet());
     static final Set<String> PROXIES = Set.of("payment");
 
     private final Versions versions;

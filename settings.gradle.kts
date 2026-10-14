@@ -5,5 +5,5 @@ plugins {
 
 rootProject.name = "oncall-agent"
 
-// 모듈은 해당 주차에 추가한다: agent-gateway, agent-core(2주차), service(6주차)
-include("eval")
+// 모듈은 해당 주차에 추가한다: runners:claude_code(2주차 B), service(6주차), runners:own_loop(2단계)
+include("adapters", "tools", "eval")
