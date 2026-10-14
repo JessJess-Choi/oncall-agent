@@ -4,7 +4,7 @@
 
 목적은 에이전트 자체보다 **에이전트 하네스**(툴, 컨텍스트 관리, 가드레일, 평가, 관측성, 루프)를 직접 설계하고, 그 효과를 **숫자로 증명**하는 경험입니다.
 
-> 진행 상태: 1단계 1주차 완료 (대상 시스템, 장애 시나리오 5종, 평가 데이터). 에이전트는 2주차부터 만듭니다.
+> 진행 상태: 1단계 2주차 진행 중. 1주차(대상 시스템, 장애 시나리오 5종, 평가 데이터) 완료, 2주차 툴 서버(MCP) 완료, Claude Code 러너 예정.
 
 ---
 
@@ -115,7 +115,9 @@ scenarios/
   GOLDEN.lock      봉인
 infra/             docker-compose, 샘플 서비스(services/), 관측 스택 설정
 docs/              설계, 로드맵, 시나리오 형식
-tools/ adapters/ runners/ service/   2주차 이후
+adapters/          데이터 소스: 공통 인터페이스와 스냅샷 구현 (평가 전용 meta.json은 읽지 않음)
+tools/             MCP 툴 서버 oncall: 조회 툴 3개, 증거 번호(E1…), submit_report 검사
+runners/ service/  2주차 러너, 6주차 서비스
 ```
 
 ---
@@ -127,6 +129,7 @@ tools/ adapters/ runners/ service/   2주차 이후
 ```bash
 make up          # 대상 시스템 기동 (첫 실행은 이미지 빌드와 주문 400만 건 시드로 몇 분)
 make test        # 단위 테스트 (모델 호출 없음)
+make tools       # MCP 툴 서버 실행 파일 생성 (Java 21로 실행)
 make eval        # GOLDEN.lock 검증 (채점은 3주차)
 make capture SCENARIO=bad-deploy-01   # 장애 주입 후 스냅샷 캡처 (기존 스냅샷은 덮어쓰지 않음)
 make down        # 종료 (데이터 유지) / make down-clean: 데이터까지 삭제

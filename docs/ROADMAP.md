@@ -1,7 +1,7 @@
 # 로드맵
 
 현재 단계: 1단계 (Claude Code 런타임)
-현재 주차: 1
+현재 주차: 2
 
 가정: 퇴근 후와 주말, 주 10~15시간. 0주차 + 1단계 8주 + 2단계 2~3주.
 
@@ -29,8 +29,9 @@
 - 완료 기준: 시나리오 5개가 스냅샷과 라벨을 갖고, GOLDEN.lock이 생성되어 있다
 
 ## 2주차: 툴 서버와 Claude Code 러너 v0
-- [ ] 데이터 소스 어댑터: 실시간 스택과 스냅샷을 같은 인터페이스로
-- [ ] 툴 3개(`search_logs`, `get_metrics`, `get_recent_deploys`)와 MCP 서버(`oncall`). 툴 결과마다 evidence ID를 발급해 서버가 보관
+- [x] 데이터 소스 어댑터: 공통 인터페이스(TelemetrySource)와 스냅샷 구현. 실시간 구현은 6주차로 옮김(결정 기록 2026-10-11)
+- [x] 툴 3개(`search_logs`, `get_metrics`, `get_recent_deploys`)와 MCP 서버(`oncall`). 툴 결과마다 evidence ID를 발급해 서버가 보관
+  - [x] `submit_report` v0를 앞당김: 형식·카테고리·증거 번호 존재 검사, 수락된 리포트만 파일로 저장 (발췌문 대조는 5주차)
 - [ ] 이해 단계: 대화형 Claude Code에 툴 서버를 연결해 시나리오 한 건을 직접 조사시켜 본다. 어떤 툴을 어떤 순서로 부르는지, 어디서 막히는지 메모 (docs/notes/ 아래)
 - [ ] `runners/claude_code/`: 격리 실행(빈 임시 디렉터리, `--mcp-config`, 허용 툴 제한, 권한 모드, 시스템 프롬프트는 prompts/ 파일로 주입), stream-json을 RunResult로 정규화. 사용한 플래그는 runners/claude_code/README.md에 기록
 - [ ] 한도 측정: 시나리오 한 건을 2~3회 실행하고 실행 전후 구독 한도(`/usage`)를 기록
@@ -60,6 +61,7 @@
 - 완료 기준: 인용 유효율과 미검증 인용률이 지표에 있다
 
 ## 6주차: 서비스 레이어 (데모 수준)
+- [ ] 실시간 데이터 소스 어댑터 (2주차에서 옮김): TelemetrySource를 Loki·Prometheus·배포 기록으로 구현
 - [ ] 웹훅 수신, 알림 fingerprint로 중복 제거
 - [ ] Postgres 기반 큐와 워커(러너 호출), 실행 상태·트레이스 저장, 재시도
 - [ ] Slack 리포트 (스레드), 동시 실행 수 제한과 실행당 사용량 상한

@@ -68,10 +68,12 @@ flowchart TD
 | `read_runbook` | prompts/runbooks의 문서 조회 |
 | `submit_report` | 리포트 제출. 인용 검증 통과 시에만 수락 |
 
+2주차(v0)에 만든 것은 `search_logs`(최근 N줄 원문), `get_metrics`, `get_recent_deploys`, `submit_report`(형식·번호 존재 검사)다. 나머지는 해당 주차에 추가한다.
+
 ## 리포트 스키마
 ```json
 {
-  "root_cause_category": "bad_deploy",
+  "root_cause_category": "bad_deploy (원인 카테고리 5개 또는 unknown)",
   "summary": "한두 문장 요약",
   "confidence": "high | medium | low | unknown",
   "evidence": [{ "id": "E3", "quote": "툴 결과에 실제로 있는 발췌문" }],
@@ -133,3 +135,15 @@ flowchart TD
 | 2026-10-07 | 누출 검사(LeakGuard): 주입 흔적 단어가 있으면 스냅샷을 만들지 않음. toxiproxy에는 중립 별칭 `payment-gateway`를 붙임 | 예외 메시지와 메트릭 라벨에 호스트 이름 toxiproxy가 찍혀 정답이 새는 것을 설계 중 발견 | 캡처 후 수동 검토 |
 | 2026-10-07 | meta.json·정의·라벨은 평가 전용. 2주차 어댑터와 툴이 노출하지 않는다 | 주입 시각과 원인이 들어 있음 | - |
 | 2026-10-10 | 저장소 설정 파일 일관성 테스트(RepoConfigTest): Claude 차단 설정의 JSON 문법과 필수 규칙, .gitattributes, 알림 규칙·toxiproxy·compose·alloy와 캡처 도구의 일치 | settings.json이 0주차부터 깨져 있던 걸 우연히 발견. 방어 장치도 매번 검증되어야 함 | 사람의 수동 확인 |
+| 2026-10-11 | 툴 서버는 MCP 공식 Java SDK(2.0.1, Jackson 3)와 stdio 전송. 서버 프로세스 하나가 조사 한 건 | Claude Code·Copilot 등 MCP 클라이언트가 그대로 붙음. 프로세스 수명이 조사 수명이라 증거 보관함이 조사 사이에 섞이지 않음 | JSON-RPC 직접 구현, HTTP(Streamable) 전송 + 세션별 보관함 |
+| 2026-10-11 | stdout은 MCP 메시지 전용. 시작 시 stdout을 잡아 두고 System.out은 stderr로 돌림, 로그는 slf4j-simple(stderr) | 로그 한 줄만 섞여도 클라이언트가 메시지를 못 읽음. 연결 스모크 테스트로 확인 | 로그 끄기(라이브러리 println은 못 막음) |
+| 2026-10-11 | 툴 입력 검사는 우리 코드 한 곳(SDK 스키마 검사 끔). 오류는 isError 결과로 돌려주고, 가능한 값을 알려 주되 경로는 넣지 않음 | 모델이 고쳐서 다시 부를 수 있는 메시지. 스냅샷 폴더 이름(시나리오 이름) 누출 방지 | SDK 스키마 검사(메시지 제어 불가) |
+| 2026-10-11 | search_logs v0는 조건에 맞는 최근 N줄 원문(앱 JSON 로그는 레벨·로거·메시지·예외 줄로 펼침) | 4주차 패턴 집계의 효과(호출 수·비용 감소)를 잴 기준선 | 처음부터 패턴 집계 |
+| 2026-10-11 | 결과 크기 상한(result_max_chars)을 넘으면 큰 배열에서 오래된 항목부터 빼고 truncated로 알림. 상한은 tools/src/main/resources/limits.yaml 한 곳 | 원칙 2. 실패시키는 것보다 줄여서 주는 편이 조사가 이어짐 | 초과 시 오류 |
+| 2026-10-11 | 데이터 소스는 공통 인터페이스(TelemetrySource) + 스냅샷 구현만 2주차에. 실시간 구현은 6주차 | 평가는 스냅샷 재생만으로 가능하고, 실시간 소스는 서비스 레이어에서 처음 필요 | 2주차에 같이 구현 |
+| 2026-10-11 | SnapshotSource는 허용 파일 4개(alert, logs, metrics, deploys)만 연다. meta.json은 목록에 없음 | 정보 경계를 코드로 강제. 실제 시험지 5장 대상 정보 경계 테스트 | 툴 쪽에서 필드 걸러내기 |
+| 2026-10-11 | submit_report 2주차 범위: 형식·카테고리·증거 번호 존재. 틀린 곳은 한 번에 모두 알려 줌, 수락은 한 번, 파일은 임시 파일 후 이동 | 발췌문 대조는 5주차. 러너가 반쯤 쓴 리포트를 읽지 않게 | 첫 오류만 알림 |
+| 2026-10-11 | 카테고리 `unknown` 허용(확신도도 unknown일 때만). 근거가 비면 확신도는 unknown만 | 근거 없는 단정을 막고, 5주차 "불확실" 평가에 대비 | 5개 중 하나 강제 |
+| 2026-10-11 | 원인 카테고리 단일 원천은 adapters의 RootCause enum. eval(정의 검사)과 tools(리포트 검사)가 공유 | 카테고리 목록이 두 곳에서 어긋나지 않게 | 모듈별 문자열 목록 |
+| 2026-10-11 | 1단계 격리에 `--bare`를 쓰지 않는다 | 공식 문서상 `--bare`는 구독 로그인 대신 API 키를 요구함. 다른 플래그 조합으로 격리(2주차 B) | `--bare` |
+| 2026-10-11 | 툴 서버는 Java 21로 실행해야 한다. 실행 시 java 경로를 명시 | PATH의 기본 java가 17이면 시작 스크립트가 실패함(실제 발생) | 시작 스크립트와 PATH에 의존 |
