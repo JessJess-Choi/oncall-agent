@@ -15,6 +15,21 @@ scenarios/GOLDEN.lock에는 labels와 snapshots의 해시가 들어 있고, 평�
 `slow_query`, `connection_pool_exhaustion`, `bad_deploy`, `downstream_timeout`, `memory_leak`
 (카테고리를 추가하면 라벨, 채점기, 이 문서를 함께 갱신한다)
 
+### 카테고리 정의
+카테고리는 **장애가 일어난 기술적 방식(메커니즘)**으로 정한다. 배포는 대부분 계기일 뿐이고, 배포 ID는 근거로 인용한다.
+이 정의는 에이전트 지시문(prompts/)에도 그대로 넣는다. 출제 기준을 수험생에게 알려 주는 것이고, 라벨은 바꾸지 않는다.
+
+| 카테고리 | 정의 | 배포가 계기인 예 |
+|---|---|---|
+| `slow_query` | DB에서 특정 쿼리가 느려져(인덱스 누락, 잠금 등) 응답이 늦어진다. 그 결과로 풀 고갈이 따라와도 이 카테고리 | - |
+| `connection_pool_exhaustion` | DB는 정상인데 앱이 커넥션을 오래 쥐거나(트랜잭션 안의 외부 호출 등) 동시 요청이 풀 크기를 넘어 커넥션을 얻지 못한다 | 결제 호출을 트랜잭션 안으로 옮긴 배포 (pool-exhaustion-01) |
+| `bad_deploy` | 배포한 코드의 기능 오류(예외, 잘못된 로직)가 직접 에러를 낸다. 풀·메모리·외부 호출 같은 자원은 정상 | null 처리를 빠뜨린 배포 (bad-deploy-01) |
+| `downstream_timeout` | 의존하는 외부 구간이 느리거나 응답하지 않아 호출이 타임아웃 난다 | - |
+| `memory_leak` | 메모리가 계속 쌓여 GC 압박, OOM, 재기동으로 이어진다 | 만료 없는 캐시를 넣은 배포 (memory-leak-01) |
+| `unknown` (리포트 전용) | 근거가 부족해 정할 수 없다. 확신도도 unknown이어야 한다. 라벨에는 쓰지 않는다 | - |
+
+연쇄 규칙: 여러 카테고리가 해당하면 **연쇄의 가장 앞에 있는 기술적 방식**을 고른다. 예: 느린 쿼리가 커넥션을 오래 쥐어 풀이 고갈되면 `slow_query`. 배포는 방식이 아니라 계기로 본다.
+
 ## 정의 예시
 ```yaml
 id: downstream-timeout-01
@@ -64,8 +79,8 @@ key_evidence:                     # 원인을 가리키는 근거. 증상이 아
 distractors:                      # 선택. 원인으로 지목하면 오답인 것 (미끼 배포, 증상 카테고리)
   - kind: deploy
     deploy_id: deploy-8525
-  - kind: category
-    root_cause_category: connection_pool_exhaustion
+  - kind: category                # 계기인 배포를 원인 카테고리로 답하면 오답
+    root_cause_category: bad_deploy
 action_keywords: ["rollback", "롤백", "transaction", "트랜잭션"]
 notes: 결제 API 호출이 트랜잭션 안으로 이동한 배포가 원인
 ```
@@ -76,7 +91,7 @@ notes: 결제 API 호출이 트랜잭션 안으로 이동한 배포가 원인
 | `deploy` | `deploy_id` | 이 배포를 지목했는가 |
 | `metric` | `name`, `service`, `labels`(선택), `expect` | 이 메트릭이 기준선 대비 이렇게 변했다는 것을 근거로 들었는가 |
 
-`distractors`는 "속지 않는 능력"을 재기 위한 것이다. 연쇄 증상이 있는 시나리오(예: 느린 쿼리가 풀 고갈을 일으킴)의 라벨은 원인 기준으로 쓰고, 증상 카테고리는 `distractors`에 둔다.
+`distractors`는 "속지 않는 능력"을 재기 위한 것이다. 연쇄 증상이 있는 시나리오(예: 느린 쿼리가 풀 고갈을 일으킴)의 라벨은 위 카테고리 정의의 연쇄 규칙으로 정하고, 증상 카테고리나 계기(배포)를 원인으로 답한 카테고리는 `distractors`에 둔다.
 
 ## 스냅샷 구조
 ```
